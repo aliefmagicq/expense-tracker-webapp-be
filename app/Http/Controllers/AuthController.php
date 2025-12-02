@@ -56,7 +56,7 @@ class AuthController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'email' => 'required|string|email',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => 'required|string|min:8',
         ]);
 
         if ($validate->fails()) {
@@ -103,10 +103,8 @@ class AuthController extends Controller
     private function tokenResponse (String $apiToken)
     {
         return [
-            'token' => [
-                'api_token' => $apiToken,
-                'type' => 'Bearer'
-            ]
+            'api_token' => $apiToken,
+            'type' => 'Bearer'
         ];
     }
 }
