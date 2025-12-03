@@ -55,4 +55,19 @@ class User extends Authenticatable
     {
         return $this->hasOne(EmailToken::class, 'user_id', 'id');
     }
+
+    public function organizations ()
+    {
+        return $this->hasMany(Organization::class, 'author_id', 'id');
+    }
+
+    public function branches ()
+    {
+        return $this->hasMany(Branch::class, 'author_id', 'id');
+    }
+
+    public function transactions ()
+    {
+        return $this->hasMany(Transaction::class, 'user_id', 'id');
+    }
 }
