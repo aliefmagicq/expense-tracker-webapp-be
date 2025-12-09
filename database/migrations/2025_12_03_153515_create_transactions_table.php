@@ -13,7 +13,7 @@ return new class extends Migration
             $table->enum('transaction_type', ['income', 'expense']);
             $table->integer('amount');
             $table->string('notes');
-            $table->json('edit_history');
+            $table->json('edit_history')->nullable();
 
             $table->foreignId('initial_balance_id')->constrained();
             $table->foreignId('user_id')->constrained();

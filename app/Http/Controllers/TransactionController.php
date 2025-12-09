@@ -20,7 +20,7 @@ class TransactionController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'transaction_type' => ['required', new Enum(TransactionType::class)],
             'amount' => 'required|integer',
-            'notes' => 'nullable|string|unique:transactions,notes',
+            'notes' => 'required|string',
             'edit_history' => 'nullable|array'
         ]);
 
@@ -30,34 +30,50 @@ class TransactionController extends Controller
             );
         }
 
-        /** create transaction */
         $data = $validate->validated();
-        $createTransactions = $request->user()->transactions()->create($data);
         
-        /** get initial balance amount */
-        $initBalance = InitialBalance::query()->where('branch_id', $request->branch_id)->first();
+        /**
+         * get initial balance amount
+         * 
+         */
+        $initBalance = InitialBalance::query()->where('branch_id', $data['branch_id'])->first();
         $initBalanceAmount = $initBalance['amount'];
 
-        /** get closing balance from daily balance */
-        $currentBalance = null;
+        /**
+         * get closing balance from daily balance, use branch_id
+         * 
+         */
+        $currentBalance = 0;
         $ltsDailyBalanceBranch = DailyBalance::query()->where('branch_id', $data['branch_id'])->latest()->first();
-        if ($ltsDailyBalanceBranch) {
-            $currentBalance = $ltsDailyBalanceBranch['closing_balance'];
-        } else {
+        if (!$ltsDailyBalanceBranch) {
             $currentBalance = $initBalanceAmount;
+        } else {
+            $currentBalance = $ltsDailyBalanceBranch['closing_balance'];
         }
 
-        /** insert to initial balance */
-        $openingBalance = null;
+        /**
+         * logic for choose opening_balance, use current opening_balance or (use closing_balance for opening_balance)
+         * 
+         */
+        $openingBalance = 0;
         $closingBalance = $currentBalance + ($data['transaction_type'] == 'expense' ? -$data['amount'] : +$data['amount']);
 
         $now = Carbon::now()->format('Y-m-d');
-        if ($ltsDailyBalanceBranch && (Carbon::parse($ltsDailyBalanceBranch['updated_at'])->format('Y-m-d') < $now)) {
+        if ($ltsDailyBalanceBranch && Carbon::parse($ltsDailyBalanceBranch['updated_at'])->format('Y-m-d') < $now) {
             $openingBalance = $ltsDailyBalanceBranch['closing_balance'];
         } else {
-            $currOpeningBalance = DailyBalance::query()->whereDate('created_at', '=', Carbon::now()->format('Y-m-d'))->first();
-            $openingBalance = ($currOpeningBalance['opening_balance']) ?? 0;
+            $currOpeningBalance = DailyBalance::query()->where('branch_id', $data['branch_id'])
+                                                       ->whereDate('updated_at', '=', Carbon::now()->format('Y-m-d'))
+                                                       ->first();
+
+            $openingBalance = $currOpeningBalance['opening_balance'] ?? 0;
         }
+
+        /**
+         * Insert new transaction and new daily_balance
+         * 
+         */
+        $createTransactions = $request->user()->transactions()->create($data);
 
         $createDailyBalance = DailyBalance::query()->create([
             'transaction_id' => $createTransactions['id'],
