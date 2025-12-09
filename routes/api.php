@@ -1,6 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BranchController;
+use App\Http\Controllers\InitialBalanceController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +20,34 @@ Route::prefix('auth')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('sign-out', [AuthController::class, 'signOut']);
     });
+});
+
+Route::prefix('organization')->group(function () {
+   Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
+       Route::post('/', [OrganizationController::class, 'create']);
+   }); 
+});
+
+Route::prefix('branch')->group(function () {
+   Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
+       Route::post('/', [BranchController::class, 'create']);
+   }); 
+});
+
+Route::prefix('initial-balance')->group(function () {
+   Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
+       Route::post('/', [InitialBalanceController::class, 'create']);
+   }); 
+});
+
+Route::prefix('transaction')->group(function () {
+   Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
+       Route::post('/', [TransactionController::class, 'create']);
+   }); 
+});
+
+Route::prefix('daily-balance')->group(function () {
+   Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
+    //    Route::post('/', [DailyBalanceController::class, 'create']);
+   }); 
 });
