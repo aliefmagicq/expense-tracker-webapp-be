@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
 use App\Models\InitialBalance;
+use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -26,5 +28,21 @@ class InitialBalanceController extends Controller
         return ResponseController::success(
             'create initial_balance successful', $newInitialBalance, 201
         );
-    } 
+    }
+    
+    public function getTotalBalance(Request $request)
+    {
+        $getBranches = Branch::query()->whereIn('organization_id', 
+                                                Organization::query()->select(['id', 'author_id'])
+                                                                             ->pluck('id'))
+                                                                             ->pluck('id');
+
+        $initialBalance = InitialBalance::query()->whereIn('branch_id', $getBranches);
+        $initialBalanceAmount = $initialBalance->sum('amount');
+
+        return response()->json([
+            'initial_balances' => $initialBalance->get(),
+            'initial_balances_total' => $initialBalanceAmount 
+        ]);
+    }
 }

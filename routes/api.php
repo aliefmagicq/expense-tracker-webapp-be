@@ -25,24 +25,28 @@ Route::prefix('auth')->group(function () {
 Route::prefix('organization')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [OrganizationController::class, 'create']);
+       Route::get('/', [OrganizationController::class, 'getOrganizations']);
    }); 
 });
 
 Route::prefix('branch')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [BranchController::class, 'create']);
+       Route::get('/', [BranchController::class, 'getBranches']);
    }); 
 });
 
 Route::prefix('initial-balance')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [InitialBalanceController::class, 'create']);
+       Route::get('/total-balance', [InitialBalanceController::class, 'getTotalBalance']);
    }); 
 });
 
 Route::prefix('transaction')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [TransactionController::class, 'create']);
+       Route::get('/', [TransactionController::class, 'getTransactions']);
    }); 
 });
 

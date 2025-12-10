@@ -31,13 +31,6 @@ class BranchController extends Controller
     
     public function getBranches (Request $request)
     {
-        // $user = $request->user();
-        // if (!$user) {
-        //     return ResponseController::fails(
-        //         'unauthorized', '', null, 401
-        //     );
-        // }
-        
         $branches = Branch::query()->get();
         return ResponseController::success(
             'get all branches', $branches, 200
