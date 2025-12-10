@@ -30,7 +30,7 @@ class InitialBalanceController extends Controller
         );
     }
     
-    public function getTotalBalance(Request $request)
+    public function getInitialBalances(Request $request)
     {
         $getBranches = Branch::query()->whereIn('organization_id', 
                                                 Organization::query()->select(['id', 'author_id'])

@@ -10,6 +10,14 @@ class Branch extends Model
     /** @use HasFactory<\Database\Factories\BranchFactory> */
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'transaction_expense_total' => 'integer',
+            'transaction_income_total' => 'integer',
+        ];
+    }
+
     protected $fillable = ['name', 'description', 'organization_id', 'author_id'];
 
     public function organization ()

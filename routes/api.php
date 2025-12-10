@@ -39,7 +39,7 @@ Route::prefix('branch')->group(function () {
 Route::prefix('initial-balance')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [InitialBalanceController::class, 'create']);
-       Route::get('/total-balance', [InitialBalanceController::class, 'getTotalBalance']);
+       Route::get('/', [InitialBalanceController::class, 'getInitialBalances']);
    }); 
 });
 

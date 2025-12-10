@@ -30,32 +30,58 @@ class OrganizationController extends Controller
     }
 
     public function getOrganizations () {
-        $getOrganizations = Organization::query()->with(['branches.dailyBalances' => function ($q) {
-            $q->latest()->limit(1);
-        }])->with(['branches' => function ($q) {
-            $q->withCount('transactions');
+        $getOrganizations = Organization::query()->with(['branches' => function ($q) {
+            $q->with(['dailyBalances' => function ($q) {
+                $q->latest()->limit(1);
+            }])->withCount('transactions')
+                ->withSum(['transactions as transaction_expense_total' => function ($q) {
+                    $q->where('transaction_type', 'expense');
+                }], 'amount')
+                ->withSum(['transactions as transaction_income_total' => function ($q) {
+                    $q->where('transaction_type', 'income');
+                }], 'amount');
         }])->get();
 
-        $getOrganizations->each(function ($organization) {
-            if ($organization->branches->count() < 1) {
+        $getOrganizations->each(function ($organization, $i) {
+
+            /**
+             * Loop thorugh branches
+             */
+            $branches = $organization->branches; 
+            if ($branches->count() < 1) {
                 $organization->closing_balances_total = 0;
-                $organization->total_transactions = 0;
+                $organization->transactions_total = 0;
             }
 
-            $organization->branches->each(function ($branch) use ($organization) {
-                if ($branch->dailyBalances->count() < 1) {
+            $branches->each(function ($branch, $i) use ($organization) {
+            
+                /**
+                 * Daily balances
+                 */
+                $dailyBalances = $branch->dailyBalances;
+                if ($dailyBalances->count() < 1) {
                     $organization->closing_balances_total = 0;
                 }
 
-                $branch->dailyBalances->each(function ($dailyBalance) use ($organization) {
-                    $organization->closing_balances_total += $dailyBalance->closing_balance ?? 0;
+                $dailyBalances->each(function ($dailyBalance, $i) use ($organization) {
+                    $closingBalance = $dailyBalance->closing_balance;
+                    $organization->closing_balances_total += $closingBalance;
                     $dailyBalance->is_latest_daily_balance = true;
                 });
 
-                $organization->total_transactions += $branch->transactions_count ?? 0;
+                /**
+                 * Transactions
+                 */
+                $transactionCount = $branch->transactions_count;
+                $transactionIncome = $branch->transaction_income_total ?? 0;
+                $transactionExpense = $branch->transaction_expense_total ?? 0;
+
+                $organization->transactions_total += (int)$transactionCount;
+                $organization->transactions_income_total += (int)$transactionIncome;
+                $organization->transactions_expense_total += (int)$transactionExpense;
             });
         });
 
-        return ResponseController::success('success get organizations', $getOrganizations);
+        return ResponseController::success('success get organizations', $getOrganizations, 200);
     }
 }
