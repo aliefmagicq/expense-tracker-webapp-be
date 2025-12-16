@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyBalance;
 use App\Models\Organization;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -76,9 +75,9 @@ class OrganizationController extends Controller
                 $transactionIncome = $branch->transaction_income_total ?? 0;
                 $transactionExpense = $branch->transaction_expense_total ?? 0;
 
-                $organization->transactions_total += (int)$transactionCount;
-                $organization->transactions_income_total += (int)$transactionIncome;
-                $organization->transactions_expense_total += (int)$transactionExpense;
+                $organization->transactions_total += $transactionCount;
+                $organization->transactions_income_total += $transactionIncome;
+                $organization->transactions_expense_total += $transactionExpense;
             });
         });
 

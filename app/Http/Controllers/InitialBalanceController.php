@@ -40,9 +40,13 @@ class InitialBalanceController extends Controller
         $initialBalance = InitialBalance::query()->whereIn('branch_id', $getBranches);
         $initialBalanceAmount = $initialBalance->sum('amount');
 
-        return response()->json([
-            'initial_balances' => $initialBalance->get(),
-            'initial_balances_total' => $initialBalanceAmount 
-        ]);
+        return ResponseController::success(
+            'get initial-balances sucessful',
+            [
+                'initial_balances' => $initialBalance->get(),
+                'initial_balances_total' => $initialBalanceAmount
+            ],
+            200
+        );
     }
 }
