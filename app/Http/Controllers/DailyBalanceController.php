@@ -53,11 +53,16 @@ class DailyBalanceController extends Controller
          * @var mixed
          * Mapping transactions by array_reduce
          */
-        $result = array_reduce($hours, function ($arr, $current) use ($transactions) {
-            $transactionsResult = array_filter($transactions->get()->toArray(), function ($item) use ($current) {
+        $allTransactions = $transactions->get()->toArray();
+        $result = array_reduce($hours, function ($arr, $current) use ($allTransactions) {
+        $transactionsResult = array_values(array_filter(
+            $allTransactions,
+            function ($item) use ($current) {
                 $toHours = Carbon::parse($item['updated_at'])->format('H:00');
                 return (int)explode(':', $toHours)[0] == (int)explode(':', $current)[0];
-            });
+            }
+        ));
+
 
             $createObj = [
                 'hour' => $current,
@@ -84,8 +89,8 @@ class DailyBalanceController extends Controller
          * @var mixed
          * Create hours array from 00:00 to 23:59
         */
-        $startOfWeeks = Carbon::parse($getDate)->startOfWeek()->format('Y-m-d H:i:s');
-        $endOfWeeks = Carbon::parse($getDate)->endOfWeek()->format('Y-m-d H:i:s');
+        $startOfWeeks = Carbon::parse($getDate)->startOfWeek()->format('Y-m-d');
+        $endOfWeeks = Carbon::parse($getDate)->endOfWeek()->format('Y-m-d');
         $period = CarbonPeriod::create($startOfWeeks, '1 day', $endOfWeeks);
         $weeks = [];
 
@@ -108,20 +113,24 @@ class DailyBalanceController extends Controller
          * @var mixed
          * Mapping transactions by array_reduce
          */
-        $result = array_reduce($weeks, function ($arr, $current) use ($transactions) {
-            $transactionsResult = array_filter($transactions->get()->toArray(), function ($item) use ($current) {
-                $getTransactionDate = Carbon::parse($item['updated_at'])->format('Y-m-d');
-                return $getTransactionDate == Carbon::parse($current)->format('Y-m-d');
-            });
+        $allTransactions = $transactions->get()->toArray();
+        $result = array_reduce($weeks, function ($arr, $current) use ($allTransactions) {
+            $transactionsResult = array_values(array_filter(
+                $allTransactions,
+                function ($item) use ($current) {
+                    return Carbon::parse($item['updated_at'])->format('Y-m-d')
+                        === Carbon::parse($current)->format('Y-m-d');
+                }
+            ));
 
-            $createObj = [
+            $arr[] = [
                 'week' => $current,
                 'daily_balances' => $transactionsResult
             ];
 
-            array_push($arr, $createObj);
             return $arr;
         }, []);
+
 
         return ResponseController::success('get daily-balances per weeks successful', $result,200);
     }
