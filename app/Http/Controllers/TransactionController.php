@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\enum\TransactionType;
-use App\Models\Branch;
 use App\Models\DailyBalance;
 use App\Models\InitialBalance;
+use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -88,5 +88,11 @@ class TransactionController extends Controller
                 'new_daily_balance' => $createDailyBalance
             ] ,201
         );
+    }
+
+    public function getTransactions (Request $request) 
+    {
+        $getTransactions = Transaction::query()->get();
+        return ResponseController::success('success get transactions', $getTransactions);
     }
 }

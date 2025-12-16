@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\DailyBalanceController;
 use App\Http\Controllers\InitialBalanceController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\TransactionController;
@@ -25,29 +26,39 @@ Route::prefix('auth')->group(function () {
 Route::prefix('organization')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [OrganizationController::class, 'create']);
+
+       /**
+        * Usefull for dashboard statistic front end
+        */
+       Route::get('/', [OrganizationController::class, 'getOrganizations']);
    }); 
 });
 
 Route::prefix('branch')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [BranchController::class, 'create']);
+       Route::get('/', [BranchController::class, 'getBranches']);
    }); 
 });
 
 Route::prefix('initial-balance')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [InitialBalanceController::class, 'create']);
+       Route::get('/', [InitialBalanceController::class, 'getInitialBalances']);
    }); 
 });
 
 Route::prefix('transaction')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
        Route::post('/', [TransactionController::class, 'create']);
+       Route::get('/', [TransactionController::class, 'getTransactions']);
    }); 
 });
 
 Route::prefix('daily-balance')->group(function () {
    Route::middleware(['auth:sanctum', 'check_user', 'check_role:supervisor'])->group(function () {
-    //    Route::post('/', [DailyBalanceController::class, 'create']);
+        Route::get('/', [DailyBalanceController::class, 'getDailyBalances']);
+        Route::get('/per-hours', [DailyBalanceController::class, 'getDailyBalancesPerHours']);
+        Route::get('/per-weeks', [DailyBalanceController::class, 'getDailyBalancesPerWeeks']);
    }); 
 });
